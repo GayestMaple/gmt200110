@@ -1,6 +1,7 @@
 $(document).ready(() => {
-    let uploadUrl = 'http://127.0.0.1:2999/files/upload';
-    let downloadUrl = 'http://127.0.0.1:2999/files/download';
+    let rootUrl = 'https://www.gayestmaple.com/test/gmt200110/filestation'
+    let uploadUrl = rootUrl+'/files/upload';
+    let downloadUrl = rootUrl+'/files/download';
 
     let fileUploader = $('#file-uploader')[0];
     let fileDownloader = $('#file-downloader');

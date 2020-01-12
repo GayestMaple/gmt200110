@@ -4,6 +4,7 @@ const Koa = require('koa');
 const cors = require('koa2-cors');
 const Router = require('koa-router');
 const koaBody = require('koa-body');
+const send = require('koa-send');
 const static = require('koa-static');
 
 const app = new Koa();
@@ -27,12 +28,11 @@ app
 router
     .get('/', async ctx => {
         ctx.type = 'html';
-        ctx.body = fs.readFileSync('./public/index.html');
+        ctx.body = fs.createReadStream('./public/index.html')
     })
     .get('/files/download', async ctx => {
-        fs.accessSync
         try {
-            ctx.body = fs.readFileSync('./station/'+ctx.query.filename);
+            await send(ctx, ctx.query.filename, { root: __dirname + '/station'});
         } catch (err) {
             ctx.body = 'File does not exist!';
         }
