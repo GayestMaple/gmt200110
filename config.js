@@ -3,7 +3,7 @@ const path = require('path');
 const app = {
     // 数据库信息
     dbUrl: 'mongodb://localhost:27017/',
-    dbName: '',
+    dbName: 'gmt200110',
     // 静态资源信息
     resUrl: path.join(__dirname, '/public')
 };

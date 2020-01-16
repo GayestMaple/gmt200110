@@ -17,6 +17,7 @@ li input {
     width: 200px;
     height: 24px;
     border: 1px solid grey;
+    text-align: center;
 }
 
 li button {

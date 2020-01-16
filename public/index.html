@@ -7,6 +7,8 @@
     <title>File Uploader</title>
     <link rel="stylesheet" href="./index.css">
     <script src="./libs/jquery-3.4.1.min.js"></script>
+    <script src="./libs/FileSaver.js"></script>
+    <script src="./libs/jszip.min.js"></script>
     <script src="./libs/fileController.js"></script>
     <script src="./index.js"></script>
 </head>
@@ -15,9 +17,10 @@
         <li>
             <input type="file" name="" id="file-uploader" multiple="multiple">
             <button id="upload-btn">upload</button>
+            <p id="cipher-display"></p>
         </li>
         <li>
-            <input type="text" name="" id="file-downloader" placeholder="请输入完整文件名">
+            <input type="text" name="" id="file-downloader" placeholder="请输入文件密钥">
             <button id="download-btn">download</button>
         </li>
     </ul>

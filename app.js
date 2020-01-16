@@ -6,6 +6,8 @@ const Router = require('koa-router');
 const koaBody = require('koa-body');
 const send = require('koa-send');
 const static = require('koa-static');
+const DB = require('./module/db');
+const ObjectId = require('mongodb').ObjectId;
 
 const app = new Koa();
 const router = new Router();
@@ -30,33 +32,45 @@ router
         ctx.type = 'html';
         ctx.body = fs.createReadStream('./public/index.html')
     })
-    .get('/files/download', async ctx => {
+    .get('/files/download/verify', async ctx => {
+        let isExist = false;
         try {
-            await send(ctx, ctx.query.filename, { root: __dirname + '/station'});
+            let oid = ObjectId(ctx.query.cipher);
+            await DB.find('file_identification_info', {_id: oid}).then((res) => {
+                if (res.length > 0) {
+                    isExist = true;
+                }
+            }).catch((err) => {
+                isExist = false;
+            });
         } catch (err) {
-            ctx.body = 'File does not exist!';
+            isExist = false;
         }
+        ctx.body = isExist;
+    })
+    .get('/files/download', async ctx => {
+        let filename = null;
+        await DB.find('file_identification_info', {_id: ObjectId(ctx.query.cipher)}).then((res) => {
+            filename = res[0].filename;
+        });
+        await send(ctx, filename, { root: __dirname + '/station'});
     })
     .post('/files/upload', async ctx => {
-        const fileList = ctx.request.files.fileList;
-        if (Array.isArray(fileList)) {
-            fileList.forEach(file => {
-                // 创建可读流
-                const readStream = fs.createReadStream(file.path);
-                let filePath = path.join(__dirname, 'station/') + `/${file.name}`;
-                // 创建可写流
-                const writeStream = fs.createWriteStream(filePath);
-                // 可读流通过管道写入可写流
-                readStream.pipe(writeStream);
-            });        
-        } else {
-            const file = fileList;
-            const readStream = fs.createReadStream(file.path);
-            let filePath = path.join(__dirname, 'station/') + `/${file.name}`;
-            const writeStream = fs.createWriteStream(filePath);
-            readStream.pipe(writeStream);
-        }
-        ctx.body = "server: saved successfully!\n";
+        const file = ctx.request.files.file;
+        const readStream = fs.createReadStream(file.path);
+        // 重新以服务器时间戳命名，防止冲突及恶意篡改
+        let curtimestamp = new Date().getTime();
+        let filePath = path.join(__dirname, 'station/') + '/' + curtimestamp + '.zip';
+        const writeStream = fs.createWriteStream(filePath);
+        readStream.pipe(writeStream);
+        // 数据库存档
+        let _cipher = null;
+        let _isSaved = false;
+        await DB.insert('file_identification_info', {filename: curtimestamp+'.zip'}).then((res) => {
+            _isSaved = true;
+            _cipher = res.ops[0]._id;
+        });
+        ctx.body = {isSaved: _isSaved, cipher: _cipher};
     })
 
 // 应用路由
